@@ -1,0 +1,53 @@
+# File: docker-compose.yml
+version: "3.8"
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: chess-app:latest
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - REDIS_URL=redis://redis:6379
+      - MONGO_URL=mongodb://mongo:27017/chess
+    depends_on:
+      - redis
+      - mongo
+    volumes:
+      - ./:/usr/src/app
+    networks:
+      - appnet
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - appnet
+
+  mongo:
+    image: mongo:6.0
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_DATABASE: chess
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - appnet
+
+volumes:
+  redis-data:
+  mongo-data:
+
+networks:
+  appnet:
+    driver: bridge
