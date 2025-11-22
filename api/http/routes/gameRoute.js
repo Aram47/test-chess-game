@@ -1,7 +1,8 @@
 import { Router } from 'express';
-import redisClient from '../redis/redis.js';
+import redisClient from '../../../redis/redis.js';
 import GameService from '../services/GameService.js';
 import GameController from '../controllers/GameController.js';
+import authenticateToken from '../middlewares/authenticateToken.js';
 
 /**
  * @description Dependency Injection part
@@ -12,6 +13,9 @@ const gameController = new GameController(new GameService(redisClient)); // we c
  * @description Routes for chess game operations
  */
 const router = Router();
+
+/* authentication checking for route */
+router.use(authenticateToken);
 
 /* Api which will creat chess game */
 router.post('/create', gameController.createGame);
