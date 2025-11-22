@@ -4,18 +4,38 @@ export default class GameController {
 	}
 
 	createGame = async (req, res) => {
-		return await this.gameService.createGame(req, res);
+		try {
+			return await this.gameService.createGame(req, res);
+		} catch (error) {
+			console.error('Error in createGame controller:', error);
+			return res.status(500).json({ error: 'Internal Server Error' });
+		}
 	}
 
 	movePiece = async (req, res) => {
-		return await this.gameService.movePiece(req, res);
+		try {
+			return await this.gameService.movePiece(req, res);
+		} catch (error) {
+			console.error('Error in movePiece controller:', error);
+			return res.status(500).json({ error: 'Internal Server Error' });
+		}
 	}
 
 	endGame = async (req, res) => {
-		return await this.gameService.endGame(req, res);
+		try {
+			return await this.gameService.endGame(req, res);
+		} catch (error) {
+			console.error('Error in endGame controller:', error);
+			return res.status(500).json({ error: 'Internal Server Error' });
+		}
 	}
 
 	getGameState = async (req, res) => {
-		return await this.gameService.getGameState(req, res);
+		try {
+			return await this.gameService.getGameState(req, res);
+		} catch (error) {
+			console.error('Error in getGameState controller:', error);
+			return res.status(500).json({ error: 'Internal Server Error' });
+		}
 	}
 };
