@@ -1,4 +1,7 @@
 import { Chess } from 'chess.js';
+import ChessProblem from '../../../models/chessProblems.js';
+import InProgressProblem from '../../../models/inProgressProblems.js';
+import ChessSolvedProblemsSnapshot from '../../../models/chessSolvedProblemsSnapshot.js';
 
 export default class GameService {
 	constructor(redisClient) {
@@ -6,29 +9,64 @@ export default class GameService {
 	}
 
 	createGame = async (req, res) => {
-		const game = new Chess();
+		// problem id check mongo
+		// if not exist return error
+		// if exist then create game and stor in Redis and return gameId 
+		const { problemId, userId } = req.body;
 
-		const gameId = `game:${Date.now()}`; // Simple unique ID based on timestamp
-		// game id will be changed to userId for storing all active games of user
-		// seccond argument of hSet will be name of game or problem name
-		await this.redisClient.hSet(`gameId: ${gameId} or userId`, 'problem name or ? th game (from req.body)', {
+		const problem = await ChessProblem.findById(problemId);
+
+		if (!problem) {
+			return res.status(404).json({ error: 'Chess problem not found' });
+		}
+
+		const inProgressGame = await InProgressProblem.findOne({ userId, problemId, isCompleted: false });
+
+		if (inProgressGame) {
+			return res.status(200).json({ message: 'Resuming existing game', gameId: inProgressGame._id });
+		}
+
+		const game = new Chess(problem.fen);
+
+		const newInProgressGame = new InProgressProblem({
+			userId,
+			problemId,
+			currentFen: game.fen(),
+			movesMade: [],
+		});
+
+		await newInProgressGame.save();
+
+		await this.redisClient.hSet(userId, problemId, JSON.stringify({
 			fen: game.fen(),
 			pgn: game.pgn(),
 			turn: game.turn(),
 			moves: JSON.stringify(game.moves()),
-		});
+		}));
 
-		return gameId;
+		return newInProgressGame._id;
 	}
 
 	movePiece = async (req, res) => {
-		const { gameId, from, to } = req.body;
+		// if not exist in redis return error
+		// else check is valid move or not
+		// if valid move update fen than move engine step and store in redis
+		// check is game over or not
+		// if over call endgame function
 
-		const gameData = await this.redisClient.hGetAll(`gameId: ${gameId} or userId`);
-		if (!gameData || Object.keys(gameData).length === 0) {
+		const { problemId, userId, from, to } = req.body;
+		const activeGame = await InProgressProblem.findOne({ userId, problemId, isCompleted: false });
+
+		if (!activeGame) {
+			return res.status(404).json({ error: 'No active game found for this user and problem' });
+		}
+
+		let gameData = await this.redisClient.hGet(userId, problemId);
+		if (!gameData) {
 			return res.status(404).json({ error: 'Game not found' });
 		}
 
+		gameData = JSON.parse(gameData);
 		const game = new Chess(gameData.fen);
 		const move = game.move({ from, to });
 
@@ -36,32 +74,56 @@ export default class GameService {
 			return res.status(400).json({ error: 'Invalid move' });
 		}
 
+		// Update in-progress problem in MongoDB
+		activeGame.currentFen = game.fen();
+		activeGame.movesMade.push(move.san);
+
 		if (game.isGameOver()) {
 			// Handle game over scenario
-			// we can change this part to call shared function which will be used in endGame as well
 			return await this.endGame(req, res);
 		}
-		// Update game state in Redis
-		await this.redisClient.hSet(`gameId: ${gameId} or userId`, 'problem name or ? th game (from req.body)', {
+		
+		await this.redisClient.hSet(userId, problemId, JSON.stringify({
 			fen: game.fen(),
 			pgn: game.pgn(),
 			turn: game.turn(),
 			moves: JSON.stringify(game.moves()),
-		});
+		}));
 
 		return res.status(200).json({ message: 'Move made successfully', move });
 	}
 
 	endGame = async (req, res) => {
-		const { gameId } = req.body;
+		const { problemId, userId } = req.body;
 
-		const gameData = await this.redisClient.hGetAll(`gameId: ${gameId} or userId`);
-		if (!gameData || Object.keys(gameData).length === 0) {
+		const activeGame = await InProgressProblem.findOne({ userId, problemId, isCompleted: false });
+
+		if (!activeGame) {
+			return res.status(404).json({ error: 'No active game found for this user and problem' });
+		}
+		activeGame.isCompleted = true;
+		await activeGame.save();
+
+		const gameData = await this.redisClient.hGet(userId, problemId);
+		if (!gameData) {
 			return res.status(404).json({ error: 'Game not found' });
 		}
 
-		// before deleting we need to store snapshot of game in mongodb for analytics purpose
-		await this.redisClient.del(`gameId: ${gameId} or userId`);
+		const parsedGameData = JSON.parse(gameData);
+
+		// Store snapshot in MongoDB
+		const snapshot = new ChessSolvedProblemsSnapshot({
+			problemId: activeGame.problemId,
+			userId: activeGame.userId,
+			movesTaken: activeGame.movesMade,
+			timeTakenSeconds: Math.floor((Date.now() - activeGame.createdAt) / 1000),
+		});
+
+		await snapshot.save();
+
+		// Remove game from Redis
+		
+		await this.redisClient.hDel(userId, problemId);
 
 		return res.status(200).json({ message: 'Game ended successfully' });
 	}
