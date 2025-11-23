@@ -5,7 +5,11 @@ export default class GameController {
 
 	createGame = async (req, res) => {
 		try {
-			return await this.gameService.createGame(req, res);
+			const createdGameId = await this.gameService.createGame(req, res);
+			return res.status(201).json({
+				gameId: createdGameId,
+				message: 'Game created successfully',
+			});
 		} catch (error) {
 			console.error('Error in createGame controller:', error);
 			return res.status(500).json({ error: 'Internal Server Error' });

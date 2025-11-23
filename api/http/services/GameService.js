@@ -18,7 +18,7 @@ export default class GameService {
 			moves: JSON.stringify(game.moves()),
 		});
 
-		return res.status(201).json({ gameId, message: 'Game created successfully' });
+		return gameId;
 	}
 
 	movePiece = async (req, res) => {
