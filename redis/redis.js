@@ -2,7 +2,7 @@ import { createClient } from 'redis';
 
 const redisClient = await (async () => {
 	const client = createClient({
-  	url: process.env.REDIS_URI,
+  		url: process.env.REDIS_URI,
 	});
 
 	client.on("error", (err) => console.error("Redis Error:", err));

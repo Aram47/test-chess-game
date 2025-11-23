@@ -10,10 +10,6 @@ services:
     restart: unless-stopped
     ports:
       - "3000:3000"
-    environment:
-      - NODE_ENV=production
-      - REDIS_URL=redis://redis:6379
-      - MONGO_URL=mongodb://mongo:27017/chess
     depends_on:
       - redis
       - mongo

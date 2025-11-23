@@ -1,12 +1,10 @@
 import http from 'http';
-import config from './config/config.js';
+import './config/config.js';
 import setupHttp from './api/http/setupHttp.js';
 import setupSocket from './api/socket/setupSocket.js';
 
 class ChessServer {
 	setup = async () => {
-		await config();
-
 		const app = setupHttp();
 
 		this.server = http.createServer(app);
