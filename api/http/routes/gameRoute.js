@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import redisClient from '../../../redis/redis.js';
+import RedisClient from '../../../redis/redis.js';
 import GameService from '../services/GameService.js';
 import GameController from '../controllers/GameController.js';
 import authenticateToken from '../middlewares/authenticateToken.js';
@@ -7,7 +7,7 @@ import authenticateToken from '../middlewares/authenticateToken.js';
 /**
  * @description Dependency Injection part
  */
-const gameController = new GameController(new GameService(redisClient)); // we can wrap redisClient in to a class singleton class for dependency injection
+const gameController = new GameController(new GameService(await RedisClient.getClient()));
 
 /**
  * @description Routes for chess game operations
