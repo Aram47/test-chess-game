@@ -18,7 +18,7 @@ class ChessServer {
 
 	listen = () => {
 		const PORT = process.env.PORT;
-		this.server.listen(PORT, '0.0.0.0' , () => {
+		this.server.listen(PORT, () => {
 			console.log(`Server is running on port ${PORT}`);
 		});
 	}
