@@ -130,7 +130,7 @@ export default function ChessBranchingExample(): any {
   }
 
   // go back to parent
-  function goBack() {Tree
+  function goBack() {
     const cur = nodes[currentId];
     if (!cur.parentId) return setStatusMsg("Already at root.");
     setCurrentId(cur.parentId);
