@@ -52,7 +52,222 @@ function makeInitialTree(): { nodes: Record<NodeId, MoveNode>; rootId: NodeId } 
     fen: new Chess().fen(),
     ply: 0,
   };
-  return { nodes: { [rootId]: root }, rootId };
+  // return { nodes: { [rootId]: root }, rootId };
+  return {
+    nodes: {
+			// Root - starting position
+			'r1': {
+				id: 'r1',
+				parentId: null,
+				children: ['n1', 'v1'], // Mainline: e4, Variation: c5 (Sicilian)
+				move: undefined,
+				uci: undefined,
+				fen: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
+				ply: 0
+			},
+
+			// Mainline: 1. e4
+			'n1': {
+				id: 'n1',
+				parentId: 'r1',
+				children: ['n2', 'v2'], // Mainline: e5, Variation: d4
+				move: 'e4',
+				uci: 'e2e4',
+				fen: 'rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1',
+				ply: 1
+			},
+
+			// Mainline: 1... e5
+			'n2': {
+				id: 'n2',
+				parentId: 'n1',
+				children: ['n3'],
+				move: 'e5',
+				uci: 'e7e5',
+				fen: 'rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPP1PPP/RNBQKBNR w KQkq e6 0 2',
+				ply: 2
+			},
+
+			// Mainline: 2. Nf3
+			'n3': {
+				id: 'n3',
+				parentId: 'n2',
+				children: ['n4'],
+				move: 'Nf3',
+				uci: 'g1f3',
+				fen: 'rnbqkbnr/pppp1ppp/8/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2',
+				ply: 3
+			},
+
+			// Mainline: 2... Nc6
+			'n4': {
+				id: 'n4',
+				parentId: 'n3',
+				children: ['n5', 'v3'], // Mainline: Bb5, Variation: Bb5 Nf6 (Berlin)
+				move: 'Nc6',
+				uci: 'b8c6',
+				fen: 'r1bqkbnr/pppp1ppp/2n5/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R w KQkq - 2 3',
+				ply: 4
+			},
+
+			// Mainline: 3. Bb5 (Ruy Lopez)
+			'n5': {
+				id: 'n5',
+				parentId: 'n4',
+				children: ['n6'],
+				move: 'Bb5',
+				uci: 'f1b5',
+				fen: 'r1bqkbnr/pppp1ppp/2n5/1B2p3/4P3/5N2/PPPP1PPP/RNBQK2R b KQkq - 3 3',
+				ply: 5
+			},
+
+			// Mainline: 3... a6
+			'n6': {
+				id: 'n6',
+				parentId: 'n5',
+				children: ['n7'],
+				move: 'a6',
+				uci: 'a7a6',
+				fen: 'r1bqkbnr/1ppp1ppp/2n5/1B2p3/4P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 0 4',
+				ply: 6
+			},
+
+			// Mainline: 4. Ba4
+			'n7': {
+				id: 'n7',
+				parentId: 'n6',
+				children: ['n8'],
+				move: 'Ba4',
+				uci: 'b5a4',
+				fen: 'r1bqkbnr/1ppp1ppp/2n5/4p3/B3P3/5N2/PPPP1PPP/RNBQK2R b KQkq - 1 4',
+				ply: 7
+			},
+
+			// Mainline: 4... Nf6
+			'n8': {
+				id: 'n8',
+				parentId: 'n7',
+				children: ['n9'],
+				move: 'Nf6',
+				uci: 'g8f6',
+				fen: 'r1bqkb1r/1ppp1ppp/2n2n2/4p3/B3P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 2 5',
+				ply: 8
+			},
+
+			// Mainline: 5. O-O
+			'n9': {
+				id: 'n9',
+				parentId: 'n8',
+				children: [],
+				move: 'O-O',
+				uci: 'e1g1',
+				fen: 'r1bqkb1r/1ppp1ppp/2n2n2/4p3/B3P3/5N2/PPPP1PPP/RNBQ1RK1 b kq - 3 5',
+				ply: 9
+			},
+
+			// ===== VARIATIONS =====
+
+			// Variation 1: 1... c5 (Sicilian Defense)
+			'v1': {
+				id: 'v1',
+				parentId: 'r1',
+				children: ['v1a', 'v1b'], // Mainline: Nf3, Variation: d4
+				move: 'c5',
+				uci: 'c7c5',
+				fen: 'rnbqkbnr/pp1ppppp/8/2p5/4P3/8/PPPP1PPP/RNBQKBNR w KQkq c6 0 2',
+				ply: 1
+			},
+
+			// Variation 1a: 2. Nf3 (mainline from Sicilian)
+			'v1a': {
+				id: 'v1a',
+				parentId: 'v1',
+				children: ['v1a1'],
+				move: 'Nf3',
+				uci: 'g1f3',
+				fen: 'rnbqkbnr/pp1ppppp/8/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2',
+				ply: 2
+			},
+
+			// Variation 1a1: 2... d6
+			'v1a1': {
+				id: 'v1a1',
+				parentId: 'v1a',
+				children: [],
+				move: 'd6',
+				uci: 'd7d6',
+				fen: 'rnbqkbnr/pp2pppp/3p4/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R w KQkq - 0 3',
+				ply: 3
+			},
+
+			// Variation 1b: 2. d4 (from Sicilian)
+			'v1b': {
+				id: 'v1b',
+				parentId: 'v1',
+				children: [],
+				move: 'd4',
+				uci: 'd2d4',
+				fen: 'rnbqkbnr/pp1ppppp/8/2p5/3PP3/8/PPP2PPP/RNBQKBNR b KQkq d3 0 2',
+				ply: 2
+			},
+
+			// Variation 2: 2. d4 (from 1. e4 e5)
+			'v2': {
+				id: 'v2',
+				parentId: 'n1',
+				children: ['v2a'],
+				move: 'd4',
+				uci: 'd2d4',
+				fen: 'rnbqkbnr/pppp1ppp/8/4p3/3PP3/8/PPP2PPP/RNBQKBNR b KQkq d3 0 2',
+				ply: 2
+			},
+
+			// Variation 2a: 2... exd4
+			'v2a': {
+				id: 'v2a',
+				parentId: 'v2',
+				children: ['v2a1'],
+				move: 'exd4',
+				uci: 'e5d4',
+				fen: 'rnbqkbnr/pppp1ppp/8/8/3pP3/8/PPP2PPP/RNBQKBNR w KQkq - 0 3',
+				ply: 3
+			},
+
+			// Variation 2a1: 3. Nc3
+			'v2a1': {
+				id: 'v2a1',
+				parentId: 'v2a',
+				children: [],
+				move: 'Nc3',
+				uci: 'b1c3',
+				fen: 'rnbqkbnr/pppp1ppp/8/8/3pP3/2N5/PPP2PPP/R1BQKBNR b KQkq - 1 3',
+				ply: 4
+			},
+
+			// Variation 3: 3... Nf6 (Berlin Defense from Ruy Lopez)
+			'v3': {
+				id: 'v3',
+				parentId: 'n4',
+				children: ['v3a'],
+				move: 'Nf6',
+				uci: 'g8f6',
+				fen: 'r1bqkb1r/pppp1ppp/2n2n2/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R w KQkq - 2 3',
+				ply: 4
+			},
+
+			// Variation 3a: 4. d4 (from Berlin)
+			'v3a': {
+				id: 'v3a',
+				parentId: 'v3',
+				children: [],
+				move: 'd4',
+				uci: 'd2d4',
+				fen: 'r1bqkb1r/pppp1ppp/2n2n2/4p3/3PP3/5N2/PPP2PPP/RNBQKB1R b KQkq d3 0 4',
+				ply: 5
+			}
+		},
+		rootId: 'r1'
+  };
 }
 
 // ---------------------------
